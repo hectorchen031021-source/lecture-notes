@@ -101,7 +101,7 @@ def get_session(sid: str):
 
 # ---------- 转写 ----------
 
-def save_audio(data: bytes, suffix: str) -> Path:
+def save_temp_file(data: bytes, suffix: str) -> Path:
     import tempfile
     tmp = Path(tempfile.gettempdir()) / f"ln_chunk_{int(time.time()*1000)}{suffix}"
     tmp.write_bytes(data)
@@ -119,7 +119,7 @@ def transcribe(file: UploadFile = File(...), session_id: str = Form(""), model: 
         suffix = ".wav"
     elif name.endswith(".ogg") or name.endswith(".opus"):
         suffix = ".ogg"
-    tmp = save_audio(data, suffix)
+    tmp = save_temp_file(data, suffix)
     try:
         m = get_model(model)
         lang = None if language == "auto" else language
