@@ -239,16 +239,16 @@ def export(session_id: str = Form(...), folder: str = Form("")):
 
 # ---------- 整理（LLM） ----------
 
-DEFAULT_PROMPT = """你是哲学课笔记助手。根据用户提供的【老师讲课转写】和【文献原文】，整理成结构化笔记。
+DEFAULT_PROMPT = """你是课堂笔记助手。根据用户提供的【老师讲课转写】和【文献原文】，整理成结构化笔记。
 
 要求：
-1. 订正转写错误（最重要）：转写是语音识别的产物，含有大量错字。你必须【逐句订正】成正确的法语，例如：califlès/Calipelès→Calliclès，Soprat/Sucrate→Socrate，le gratin/Borgias→Gorgias，épicumia/épiculna→epithumia（ἐπιθυμία），le filet→le Philèbe，l'argueur→le thumos。正文用订正后的正确法语书写，【不得照抄原始错字】。
-2. 语言：笔记正文以【法语老师的原话/论点为主】——订正错误，但忠于老师讲的内容，不凭空添加老师没讲的观点。
-3. 结构：用 Markdown，分小节（## 小节标题），每节法语正文，段落式呈现老师论点。
+1. 订正转写错误（最重要）：转写是语音识别的产物，含有大量错字。你必须【逐句订正】成通顺的原文语言（转写是什么语言就订正成什么语言），不得照抄原始错字。
+2. 语言：笔记正文以【老师的原话/论点为主】——订正错误，但忠于老师讲的内容，不凭空添加老师没讲的观点。
+3. 结构：用 Markdown，分小节（## 小节标题），每节正文段落式呈现老师论点。
 4. 中文注解：每节下方加一行「中文要点：」一句话概括（中文）。
-5. 文献引用：凡老师讲到、且【文献原文】里能找到的对应段落，在文末「Textes sources ／ 原文引用」用 > 引用块 + 出处页码引用；若文献里没有，标注出处（如 Platon, Gorgias 493a）。
-6. 文末【必须】加「Vocabulaire ／ 词汇」表（法语术语 — 中文）和「Corrections ／ 转写订正」表（转写错 → 正确，至少列出你订正过的主要条目）。
-7. 开头加 YAML frontmatter：title、date、tags、subject: 哲学、lang: fr、status: 已整理、source: 课堂录音转写。
+5. 文献引用：凡老师讲到、且【文献原文】里能找到的对应段落，在文末「Textes sources ／ 原文引用」用 > 引用块 + 出处引用；若文献里没有，标注出处。
+6. 文末【必须】加「Vocabulaire ／ 词汇」表（术语 — 中文）和「Corrections ／ 转写订正」表（转写错 → 正确，至少列出订正过的主要条目）。
+7. 开头加 YAML frontmatter：title、date、tags、subject、lang、status: 已整理、source: 课堂录音转写。
 8. 只输出笔记 Markdown，不要多余解释。"""
 
 SETTINGS_FILE = BASE / "settings.json"

@@ -1,14 +1,14 @@
 # Lecture Notes
 
-本地、隐私优先的课堂笔记工具：**录音 → 转写 → 上传文献 → AI 整理 → 导出 Obsidian**，全程离线（转写在本地，AI 整理可选本地 Ollama 或你自带的 API key）。
+本地、隐私优先的课堂笔记工具：**录音 → 转写 → 上传文献 → AI 整理 → 导出 Obsidian**。转写在本地运行，AI 整理可选本地 Ollama 或你自带的 API key。
 
 A local, privacy-first lecture-note tool: record → transcribe → attach readings → AI-organize → export to Obsidian.
 
 ## 功能 Features
 
-- 🎙️ 浏览器录音，每 30 秒自动转写（本地 faster-whisper，支持法语/中文/日语等）
+- 🎙️ 浏览器录音，每 30 秒自动转写（本地 faster-whisper，支持多语言）
 - 📄 文献上传：PDF / Word 自动提取文字；图片（截图/扫描）用 macOS Vision 做 OCR
-- 🤖 一键 AI 整理：法语为主的哲学课结构化笔记（订正转写错字、原文引用、词汇表、订正表）
+- 🤖 一键 AI 整理：把转写整理成结构化笔记（订正错字、原文引用、词汇表、订正表）
 - 🔌 可插拔 LLM：本地 Ollama 或任意 OpenAI 兼容 API（DeepSeek / 硅基流动 / Gemini / OpenAI）
 - 🗂️ 多课程会话管理、转写可编辑、保存原始音频
 - 📤 导出 Markdown 到任意文件夹（可指向 Obsidian 库）
@@ -41,7 +41,7 @@ swiftc -O ocr.swift -o ocr        # 可选，macOS 图片 OCR
 
 1. 首次打开，给课程起个名字。
 2. 点录音键开始；每 30 秒自动出一段转写；可点转写文字直接改错字，点「保存转写修改」。
-3. 文献区上传教授发的 PDF/Word/图片，或填「书名+章节」出处。
+3. 文献区上传老师发的 PDF/Word/图片，或填「书名+章节」出处。
 4. 右侧「整理笔记（LLM）」：选后端、填模型，点「整理」→ 生成结构化笔记。
 
 ## 整理（AI）配置 Configuration
@@ -53,7 +53,7 @@ swiftc -O ocr.swift -o ocr        # 可选，macOS 图片 OCR
 | 本地 Ollama | 免费全隐私；先 `brew install ollama` 并 `ollama pull llama3.2`，然后填 `http://localhost:11434/v1`、模型名 |
 | 云端 API | 任意 OpenAI 兼容接口。例如硅基流动：base_url `https://api.siliconflow.cn/v1`，模型 `deepseek-ai/DeepSeek-V4-Flash`，key 填你的 |
 
-> `settings.json`（含 API key）已在 `.gitignore` 中，不会被提交。
+> 整理提示词可在 `server.py` 的 `DEFAULT_PROMPT` 里自定义（默认按「老师原话为主 + 订正 + 原文引用 + 词汇表」组织），也可在设置里覆盖。`settings.json`（含 API key）已在 `.gitignore` 中，不会被提交。
 
 ## 隐私 Privacy
 
