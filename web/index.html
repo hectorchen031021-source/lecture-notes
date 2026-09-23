@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lecture Notes 0.1</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#181b25; --panel2:#1f2330; --border:#2a2f3d;
+    --text:#e7e9ef; --muted:#8b91a3; --accent:#5b8cff; --accent2:#22c55e; --danger:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 22px;border-bottom:1px solid var(--border);background:var(--panel);flex-wrap:wrap}
+  .top h1{font-size:17px;margin:0;font-weight:600}
+  .badge{background:rgba(34,197,94,.15);color:var(--accent2);font-size:11px;padding:2px 8px;border-radius:20px}
+  .session-ctl{display:flex;align-items:center;gap:8px}
+  .session-select{min-width:230px}
+  .wrap{display:grid;grid-template-columns:1fr 340px;gap:16px;padding:18px 22px;max-width:1200px;margin:0 auto}
+  .col{display:flex;flex-direction:column;gap:16px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+  .card h2{font-size:13px;margin:0 0 12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  .rec-box{display:flex;align-items:center;gap:14px}
+  .rec-btn{width:64px;height:64px;border-radius:50%;border:none;background:var(--danger);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(239,68,68,.35)}
+  .rec-btn.off{background:var(--accent2)}
+  .rec-btn .dot{width:22px;height:22px;background:#fff;border-radius:4px}
+  .rec-btn.off .dot{width:16px;height:16px;border-radius:0;border-left:4px solid #fff;border-top:4px solid transparent;border-bottom:4px solid transparent}
+  .pause-btn{width:44px;height:44px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:15px}
+  .rec-meta{font-size:13px;color:var(--muted);line-height:1.6;flex:1}
+  .rec-meta b{color:var(--text);font-weight:600}
+  .meter{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:8px}
+  .meter i{display:block;height:100%;width:0%;background:var(--accent2);transition:width .3s}
+  .transcript{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;min-height:150px;max-height:420px;overflow-y:auto;font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap}
+  .transcript .t{color:var(--muted);font-size:11px}
+  .tabs{display:flex;gap:6px;margin-bottom:12px}
+  .tab{flex:1;text-align:center;padding:8px 0;font-size:12px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer}
+  .tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .drop{border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;color:var(--muted);font-size:13px;cursor:pointer}
+  .drop:hover,.drop.over{border-color:var(--accent);color:var(--accent)}
+  .ref-form{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .ref-form .row{display:flex;gap:8px}
+  .files{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+  .file{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px}
+  .file .icon{width:28px;height:28px;border-radius:6px;background:#2a2f3d;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+  .file .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .file .ok{color:var(--accent2);font-size:12px;flex-shrink:0}
+  .file .warn{color:#f59e0b;font-size:12px;flex-shrink:0}
+  select,input[type=text]{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 10px;font-size:13px;width:100%}
+  .btn{background:var(--accent);border:none;color:#fff;border-radius:8px;padding:11px 16px;font-size:14px;font-weight:600;cursor:pointer;width:100%}
+  .btn.ghost{background:var(--panel2);border:1px solid var(--border);color:var(--text)}
+  .btn.green{background:var(--accent2)}
+  .btn-mini{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:13px;cursor:pointer;white-space:nowrap}
+  .btn-mini:hover{border-color:var(--accent)}
+  .hint{font-size:11px;color:var(--muted);margin-top:8px}
+  .label{font-size:12px;color:var(--muted);margin-bottom:5px}
+  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;display:none;z-index:99}
+</style>
+</head>
+<body>
+  <div class="top">
+    <h1>Lecture Notes <span class="badge">0.1 试用版</span></h1>
+    <div class="session-ctl">
+      <select id="sessionSelect" class="session-select"></select>
+      <button id="newSessionBtn" class="btn-mini">＋ 新建一节课</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="col">
+      <div class="card">
+        <h2>录音转写</h2>
+        <div class="rec-box">
+          <button id="recBtn" class="rec-btn off"><span class="dot"></span></button>
+          <button id="pauseBtn" class="pause-btn" title="暂停/继续" disabled>⏸</button>
+          <div class="rec-meta">
+            <div id="recStatus"><b>未录音</b></div>
+            <div id="recTimer">00:00</div>
+            <div class="meter"><i id="meterBar"></i></div>
+          </div>
+        </div>
+        <div class="transcript" id="transcript" contenteditable="true" style="margin-top:14px">（转写文字会出现在这里，可直接编辑）</div>
+        <div style="margin-top:8px"><button id="saveTranscriptBtn" class="btn-mini">💾 保存转写修改</button></div>
+      </div>
+
+      <div class="card">
+        <h2>本节课文献</h2>
+        <div class="tabs">
+          <div class="tab on" data-tab="file">📄 上传文件</div>
+          <div class="tab" data-tab="ref">📖 填出处</div>
+        </div>
+        <div id="filePane" class="drop">＋ 拖入 PDF / Word，或点击选择</div>
+        <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.tiff,.tif,.heic" multiple style="display:none">
+        <div id="refPane" class="ref-form" style="display:none">
+          <div class="row">
+            <input type="text" id="refTitle" placeholder="作者 / 书名，如 Platon, Gorgias" style="flex:2">
+            <input type="text" id="refChapter" placeholder="章节 / 页码，如 483c–484c" style="flex:1">
+          </div>
+          <button id="addRefBtn" class="btn-mini">＋ 添加出处</button>
+        </div>
+        <div class="files" id="filesList"></div>
+        <div class="hint">PDF/Word 自动提取文字；填「出处」会在整理时自动查找原文。</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <h2>设置</h2>
+        <div class="label">转写模型</div>
+        <select id="modelSel">
+          <option value="medium" selected>medium（推荐）</option>
+          <option value="small">small</option>
+          <option value="large-v3">large-v3</option>
+        </select>
+        <div class="label" style="margin-top:12px">语言</div>
+        <select id="langSel">
+          <option value="fr" selected>法语 fr</option>
+          <option value="auto">自动检测 auto</option>
+          <option value="zh">中文 zh</option>
+          <option value="ja">日语 ja</option>
+        </select>
+        <div class="label" style="margin-top:12px">导出文件夹（留空＝存到会话目录）</div>
+        <input type="text" id="exportDir" placeholder="例如 …/你的Obsidian库/raw（留空＝存会话目录）">
+        <label class="save-toggle" style="margin-top:12px"><input type="checkbox" id="saveAudioChk"> 保存原始音频到会话目录</label>
+      </div>
+
+      <div class="card">
+        <h2>导出</h2>
+        <button id="exportBtn" class="btn green">导出转写 Markdown</button>
+        <div class="hint" id="exportHint">导出转写与文献到指定文件夹（可指向 Obsidian 库）。</div>
+      </div>
+
+      <div class="card">
+        <h2>整理笔记（LLM）</h2>
+        <div class="label">后端</div>
+        <select id="orgProvider">
+          <option value="ollama">本地 Ollama</option>
+          <option value="api">云端 API（OpenAI 兼容）</option>
+          <option value="mock">Mock（测试，不调模型）</option>
+        </select>
+        <div class="label" style="margin-top:10px">Base URL</div>
+        <input type="text" id="orgBaseUrl" placeholder="http://localhost:11434/v1">
+        <div class="label" style="margin-top:10px">API Key</div>
+        <input type="text" id="orgApiKey" placeholder="Ollama 填 ollama；云端填你的 key">
+        <div class="label" style="margin-top:10px">模型名</div>
+        <input type="text" id="orgModel" placeholder="llama3.2 / deepseek-chat / gemini-…">
+        <div class="label" style="margin-top:10px">输出文件夹（留空＝存会话目录）</div>
+        <input type="text" id="orgOutputDir" placeholder="例如 …/哲学講義">
+        <button id="saveOrgBtn" class="btn ghost" style="margin-top:12px">保存整理设置</button>
+        <button id="organizeBtn" class="btn green" style="margin-top:8px">💡 整理当前课程</button>
+        <div class="hint" id="organizeHint"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let currentSession = null;
+let stream = null, recTimerInt = null, recSeconds = 0;
+
+const getModel = () => $('modelSel').value;
+const getLang = () => $('langSel').value;
+
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', 2500);
+}
+
+async function loadSessions() {
+  const r = await fetch('/api/sessions');
+  const list = await r.json();
+  const sel = $('sessionSelect');
+  sel.innerHTML = '';
+  if (list.length === 0) {
+    await createSession(prompt('第一次使用，请给这节课题个名字（如「哲学课 2026-09-23」）') || '未命名课程');
+    return;
+  }
+  list.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.id; o.textContent = s.name;
+    sel.appendChild(o);
+  });
+  selectSession(list[0].id);
+}
+
+async function createSession(name) {
+  const fd = new FormData();
+  fd.append('name', name);
+  const r = await fetch('/api/sessions', { method: 'POST', body: fd });
+  const j = await r.json();
+  await loadSessions();
+  selectSession(j.id);
+}
+
+async function selectSession(id) {
+  currentSession = id;
+  $('sessionSelect').value = id;
+  const r = await fetch('/api/sessions/' + id);
+  const j = await r.json();
+  $('transcript').textContent = j.transcript || '（转写文字会出现在这里）';
+  renderFiles(j.literature || []);
+}
+
+function renderFiles(files) {
+  const box = $('filesList');
+  box.innerHTML = '';
+  if (!files.length) { box.innerHTML = '<div class="hint">暂无文献</div>'; return; }
+  files.forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'file';
+    const icon = f.name.endsWith('.docx') ? '📝' : '📄';
+    div.innerHTML = `<span class="icon">${icon}</span><span class="name">${f.name}</span>` +
+      `<span class="${f.chars != null ? 'ok' : 'warn'}">${f.chars != null ? '✓ 已提取 ' + f.chars + ' 字' : '处理中…'}</span>`;
+    box.appendChild(div);
+  });
+}
+
+// ---- 录音（浏览器直接录 WAV，避免 webm/mp4 解码问题）----
+const TARGET_RATE = 16000;
+let audioCtx = null, sourceNode = null, procNode = null;
+let rawChunks = [], totalSamples = 0, paused = false;
+
+async function toggleRecord() {
+  if (audioCtx && audioCtx.state !== 'closed') {
+    stopRecord(); return;
+  }
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    sourceNode = audioCtx.createMediaStreamSource(stream);
+    procNode = audioCtx.createScriptProcessor(4096, 1, 1);
+    procNode.onaudioprocess = onAudioProcess;
+    sourceNode.connect(procNode);
+    const silent = audioCtx.createGain();
+    silent.gain.value = 0;
+    procNode.connect(silent);
+    silent.connect(audioCtx.destination);
+    rawChunks = []; totalSamples = 0; paused = false;
+    $('recBtn').classList.remove('off');
+    $('pauseBtn').disabled = false;
+    $('recStatus').innerHTML = '<b>● 录音中</b>';
+    recSeconds = 0;
+    recTimerInt = setInterval(() => { recSeconds++; $('recTimer').textContent = fmt(recSeconds); }, 1000);
+  } catch (e) {
+    $('recStatus').innerHTML = '<b style="color:#ef4444">✗ 无法录音：' + (e && e.name ? e.name : e) + '</b>';
+    toast('无法访问麦克风，请在浏览器地址栏允许麦克风权限');
+  }
+}
+
+function onAudioProcess(e) {
+  if (paused) return;
+  const input = e.inputBuffer.getChannelData(0);
+  rawChunks.push(new Float32Array(input));
+  totalSamples += input.length;
+  let peak = 0;
+  for (let i = 0; i < input.length; i++) { const a = Math.abs(input[i]); if (a > peak) peak = a; }
+  $('meterBar').style.width = Math.min(peak * 120, 100) + '%';
+  if (totalSamples / audioCtx.sampleRate >= 30) flushChunk();
+}
+
+function flushChunk() {
+  if (totalSamples === 0) return;
+  const all = new Float32Array(totalSamples);
+  let off = 0;
+  for (const c of rawChunks) { all.set(c, off); off += c.length; }
+  rawChunks = []; totalSamples = 0;
+  const down = downsample(all, audioCtx.sampleRate, TARGET_RATE);
+  sendChunk(encodeWav(down));
+}
+
+function downsample(samples, fromRate, toRate) {
+  const ratio = fromRate / toRate;
+  const outLen = Math.floor(samples.length / ratio);
+  const out = new Float32Array(outLen);
+  for (let i = 0; i < outLen; i++) {
+    const start = Math.floor(i * ratio);
+    const end = Math.floor((i + 1) * ratio);
+    let sum = 0, cnt = 0;
+    for (let j = start; j < end; j++) { sum += samples[j]; cnt++; }
+    out[i] = sum / cnt;
+  }
+  return out;
+}
+
+function encodeWav(samples) {
+  const buf = new ArrayBuffer(44 + samples.length * 2);
+  const v = new DataView(buf);
+  const ws = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  ws(0, 'RIFF'); v.setUint32(4, 36 + samples.length * 2, true); ws(8, 'WAVE');
+  ws(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, TARGET_RATE, true); v.setUint32(28, TARGET_RATE * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  ws(36, 'data'); v.setUint32(40, samples.length * 2, true);
+  let o = 44;
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true); o += 2;
+  }
+  return new Blob([buf], { type: 'audio/wav' });
+}
+
+function stopRecord() {
+  if (totalSamples > 0) flushChunk();
+  if (procNode) { try { procNode.disconnect(); } catch(e){} }
+  if (sourceNode) { try { sourceNode.disconnect(); } catch(e){} }
+  if (audioCtx) { try { audioCtx.close(); } catch(e){} }
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  clearInterval(recTimerInt);
+  audioCtx = null; procNode = null; sourceNode = null;
+  $('recBtn').classList.add('off');
+  $('pauseBtn').disabled = true;
+  $('recStatus').innerHTML = '<b>未录音</b>';
+  $('recTimer').textContent = '00:00';
+}
+
+function fmt(s) { const m = String(Math.floor(s/60)).padStart(2,'0'), ss = String(s%60).padStart(2,'0'); return m + ':' + ss; }
+
+async function sendChunk(blob) {
+  const fd = new FormData();
+  fd.append('file', blob, 'chunk.wav');
+  fd.append('session_id', currentSession);
+  fd.append('model', getModel());
+  fd.append('language', getLang());
+  fd.append('save_audio', $('saveAudioChk').checked ? '1' : '');
+  try {
+    const r = await fetch('/api/transcribe', { method: 'POST', body: fd });
+    const j = await r.json();
+    if (j.text) {
+      const ts = new Date().toTimeString().slice(0,5);
+      const el = document.createElement('div');
+      el.innerHTML = `<span class="t">${ts}</span> `;
+      el.appendChild(document.createTextNode(j.text));
+      $('transcript').appendChild(el);
+      $('transcript').appendChild(document.createElement('br'));
+      $('transcript').scrollTop = $('transcript').scrollHeight;
+    }
+  } catch (e) { toast('转写请求失败'); }
+}
+
+$('recBtn').addEventListener('click', toggleRecord);
+$('pauseBtn').addEventListener('click', () => {
+  if (!audioCtx) return;
+  paused = !paused;
+  $('recStatus').innerHTML = paused ? '<b>⏸ 已暂停</b>' : '<b>● 录音中</b>';
+});
+
+// ---- 文献 ----
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  t.classList.add('on');
+  $('filePane').style.display = t.dataset.tab === 'file' ? 'block' : 'none';
+  $('refPane').style.display = t.dataset.tab === 'ref' ? 'flex' : 'none';
+}));
+
+$('filePane').addEventListener('click', () => $('fileInput').click());
+$('filePane').addEventListener('dragover', e => { e.preventDefault(); $('filePane').classList.add('over'); });
+$('filePane').addEventListener('dragleave', () => $('filePane').classList.remove('over'));
+$('filePane').addEventListener('drop', async e => {
+  e.preventDefault(); $('filePane').classList.remove('over');
+  await uploadFiles(e.dataTransfer.files);
+});
+$('fileInput').addEventListener('change', async e => { await uploadFiles(e.target.files); e.target.value=''; });
+
+async function uploadFiles(files) {
+  for (const f of files) {
+    const fd = new FormData();
+    fd.append('file', f);
+    fd.append('session_id', currentSession);
+    toast('上传中：' + f.name);
+    const r = await fetch('/api/literature', { method: 'POST', body: fd });
+    const j = await r.json();
+    if (j.error) toast(j.name + '：' + j.error);
+    else toast(j.name + ' ✓ 已提取 ' + j.chars + ' 字');
+  }
+  selectSession(currentSession);
+}
+
+$('addRefBtn').addEventListener('click', async () => {
+  const title = $('refTitle').value.trim(), chapter = $('refChapter').value.trim();
+  if (!title) { toast('请填写书名/作者'); return; }
+  const fd = new FormData();
+  const refName = chapter ? `${title}，${chapter}` : title;
+  fd.append('file', new File([refName], 'REF_' + refName + '.txt'), 'ref.txt');
+  fd.append('session_id', currentSession);
+  await fetch('/api/literature', { method: 'POST', body: fd });
+  $('refTitle').value = ''; $('refChapter').value = '';
+  toast('已添加出处');
+  selectSession(currentSession);
+});
+
+// ---- 会话 ----
+$('sessionSelect').addEventListener('change', e => selectSession(e.target.value));
+$('newSessionBtn').addEventListener('click', async () => {
+  const name = prompt('新课程名字？');
+  if (name) await createSession(name);
+});
+
+// ---- 保存转写修改 ----
+$('saveTranscriptBtn').addEventListener('click', async () => {
+  const fd = new FormData();
+  fd.append('session_id', currentSession);
+  fd.append('text', $('transcript').innerText);
+  await fetch('/api/transcript', { method: 'POST', body: fd });
+  toast('转写已保存');
+});
+
+// ---- 设置持久化 ----
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('ln_settings') || '{}');
+    if (s.model) $('modelSel').value = s.model;
+    if (s.lang) $('langSel').value = s.lang;
+    if (s.exportDir !== undefined && s.exportDir !== '') $('exportDir').value = s.exportDir;
+    if (s.saveAudio) $('saveAudioChk').checked = true;
+  } catch (e) {}
+}
+function saveSettings() {
+  localStorage.setItem('ln_settings', JSON.stringify({
+    model: $('modelSel').value,
+    lang: $('langSel').value,
+    exportDir: $('exportDir').value,
+    saveAudio: $('saveAudioChk').checked
+  }));
+}
+['modelSel', 'langSel', 'exportDir', 'saveAudioChk'].forEach(id => $(id).addEventListener('change', saveSettings));
+
+// ---- 导出 ----
+$('exportBtn').addEventListener('click', async () => {
+  const fd = new FormData();
+  fd.append('session_id', currentSession);
+  fd.append('folder', $('exportDir').value.trim());
+  const r = await fetch('/api/export', { method: 'POST', body: fd });
+  const j = await r.json();
+  toast('已导出到 ' + j.folder);
+  $('exportHint').textContent = '已导出到：' + j.folder;
+});
+
+// ---- 整理（LLM）----
+async function loadOrgSettings() {
+  try {
+    const r = await fetch('/api/settings');
+    const s = await r.json();
+    $('orgProvider').value = s.provider || 'ollama';
+    $('orgBaseUrl').value = s.base_url || '';
+    $('orgApiKey').value = s.api_key || '';
+    $('orgModel').value = s.model || '';
+    $('orgOutputDir').value = s.output_dir || '';
+  } catch (e) {}
+}
+$('orgProvider').addEventListener('change', () => {
+  if ($('orgProvider').value === 'mock') { $('orgBaseUrl').value = 'mock'; }
+  else if ($('orgBaseUrl').value === 'mock') { $('orgBaseUrl').value = ''; }
+});
+$('saveOrgBtn').addEventListener('click', async () => {
+  await fetch('/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      provider: $('orgProvider').value,
+      base_url: $('orgBaseUrl').value,
+      api_key: $('orgApiKey').value,
+      model: $('orgModel').value,
+      output_dir: $('orgOutputDir').value
+    })
+  });
+  toast('整理设置已保存');
+});
+$('organizeBtn').addEventListener('click', async () => {
+  if (!currentSession) { toast('请先选择课程'); return; }
+  $('organizeHint').textContent = '整理中…（可能需要几十秒）';
+  const fd = new FormData();
+  fd.append('session_id', currentSession);
+  const r = await fetch('/api/organize', { method: 'POST', body: fd });
+  const j = await r.json();
+  if (j.error) { $('organizeHint').textContent = j.error; toast('整理失败'); return; }
+  $('organizeHint').textContent = '已保存：' + j.saved;
+  toast('整理完成');
+  const el = document.createElement('div');
+  el.style.borderTop = '2px solid var(--accent)';
+  el.style.marginTop = '10px';
+  el.style.paddingTop = '10px';
+  el.textContent = j.result;
+  $('transcript').appendChild(el);
+  $('transcript').scrollTop = $('transcript').scrollHeight;
+});
+
+loadSettings();
+loadOrgSettings();
+loadSessions();
+</script>
+</body>
+</html>
